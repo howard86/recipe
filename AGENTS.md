@@ -15,7 +15,8 @@
 
 This is a Maison-style Bun/Turborepo full-stack workspace:
 
-- `apps/web` — Next.js app. Default styling is Tailwind CSS v4 utility classes; brand tokens live in `app/globals.css` `@theme`.
+- `apps/web` — Next.js app. Default styling is Tailwind CSS v4 utility classes plus shadcn/ui components from `@workspace-template/ui`.
+- `packages/ui` — shadcn/ui monorepo package: shared Tailwind entry and tokens (`src/styles/globals.css`), vendored components (`src/components`, excluded from Biome). Run `bunx shadcn@latest add <name>` from `apps/web`.
 - `apps/cli` — Bun CLI/scripts package.
 - `packages/data` — shared static/domain data.
 - `packages/database` — Prisma/Postgres client, schema, migrations, and seed.

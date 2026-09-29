@@ -17,7 +17,7 @@ Maison-style full-stack TypeScript monorepo:
 
 ## Current conventions
 
-- Tailwind CSS v4 is the default styling layer (utility classes, CSS-first config); brand tokens live in `apps/web/app/globals.css` `@theme`. Dark mode is OS-driven via `prefers-color-scheme`.
+- Tailwind CSS v4 is the default styling layer (utility classes, CSS-first config), with shadcn/ui (base-ui primitives, "Berry Rhea" preset: rhea / mauve / rose, DM Sans + Instrument Serif, phosphor icons) in the monorepo layout: `packages/ui` owns the shared Tailwind entry, tokens and vendored components; `apps/web` imports `@workspace-template/ui/globals.css` and re-exports its PostCSS config. Dark mode is class-based via next-themes, defaulting to the OS scheme.
 - Ultracite/Biome for linting and formatting (class sorting enforced via `useSortedClasses`).
 - Commitlint with Conventional Commits.
 - Husky local gates for commit, commit message, and push checks.

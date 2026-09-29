@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     typedEnv: true,
   },
   reactStrictMode: true,
+  transpilePackages: ["@workspace-template/ui"],
   typedRoutes: true,
 };
 

@@ -4,7 +4,9 @@
   "files": {
     // Claude worktrees under .claude/ carry their own root biome.jsonc, which
     // Biome rejects as a nested root and aborts the whole check.
-    "includes": ["!!**/.claude"]
+    // shadcn/ui components are vendored from the registry; keep them byte-for-byte
+    // upstream so `shadcn add --diff` stays readable.
+    "includes": ["!!**/.claude", "!packages/ui/src/components"]
   },
   "javascript": {
     "globals": ["Bun"]

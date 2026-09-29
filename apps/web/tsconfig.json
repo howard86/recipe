@@ -8,7 +8,11 @@
     ],
     "declaration": false,
     "declarationMap": false,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@workspace-template/ui/*": ["../../packages/ui/src/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
