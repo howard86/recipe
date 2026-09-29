@@ -1,0 +1,4 @@
+[run]
+# Run every script and package bin on Bun: `node` in PATH and `#!/usr/bin/env node`
+# shebangs resolve to bun (same as passing --bun to each command).
+bun = true

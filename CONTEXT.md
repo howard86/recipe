@@ -14,7 +14,7 @@ Recipe Box: signed-in people save recipes (typed in, or imported from a URL and 
 
 Maison-style full-stack TypeScript monorepo:
 
-- Bun is the package manager and runtime for scripts.
+- Bun is the package manager and the only runtime: scripts, tests, CLIs (`bun --bun next|prisma|tsc`), the Next.js server locally and on Vercel (`bunVersion` in `apps/web/vercel.json`). See [ADR 0005](docs/adr/0005-bun-runtime-everywhere.md).
 - Turborepo coordinates workspace tasks.
 - Next.js powers `apps/web`.
 - Prisma/Postgres lives in `packages/database`, which also exports the query modules (`recipes`, `search`, `tracking`, `profiles`, `imports`) the app calls; apps never write raw SQL. Schema changes go through migrations (`db:migrate:deploy`), not `db push`, because search depends on hand-written SQL. Prisma is pinned to exact 7.x versions: npm's `latest` tag for `prisma` points at an 8.0 release candidate that renames the CLI (`migrate` → `migration`) and drops `generate`, which breaks `db:migrate:*`, `db:seed`, and the `typecheck` task that depends on `generate`.
@@ -25,7 +25,7 @@ Maison-style full-stack TypeScript monorepo:
 
 - Tailwind CSS v4 is the default styling layer (utility classes, CSS-first config), with shadcn/ui (base-ui primitives, "Berry Rhea" preset: rhea / mauve / rose, DM Sans + Instrument Serif, phosphor icons) in the monorepo layout: `packages/ui` owns the shared Tailwind entry, tokens and vendored components; `apps/web` imports `@workspace-template/ui/globals.css` and re-exports its PostCSS config. Dark mode is class-based via next-themes, defaulting to the OS scheme.
 - Ultracite/Biome for linting and formatting (class sorting enforced via `useSortedClasses`).
-- Tests: `bun run test` (turbo) runs `bun test` per package; `apps/web` also runs `tsx --test lib/import/safe-fetch.node.ts` because Bun stubs `undici`.
+- Tests: `bun run test` (turbo) runs `bun test` per package.
 - Commitlint with Conventional Commits.
 - Husky local gates for commit, commit message, and push checks.
 - Gitleaks and Typos in local hooks and CI.

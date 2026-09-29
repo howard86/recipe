@@ -1,6 +1,6 @@
 set -e
 
-bun x lint-staged
+bun x --bun lint-staged
 
 command -v gitleaks >/dev/null 2>&1 || {
   echo "gitleaks not installed. install with: brew install gitleaks" >&2

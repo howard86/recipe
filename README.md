@@ -32,7 +32,7 @@ bun run dev
 bun run check       # Ultracite lint/check
 bun run fix         # Ultracite autofix
 bun run typecheck   # Turbo typecheck across workspaces
-bun run test        # Unit tests (bun test, plus Node tests for the import fetcher)
+bun run test        # Unit tests (bun test in every package)
 bun run build       # Turbo build
 bun run generate    # Prisma generate
 bun run db:migrate:deploy  # Apply migrations (search needs the hand-written SQL; avoid db:push)
