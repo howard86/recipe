@@ -2,7 +2,9 @@ import { appConfig } from "@workspace-template/data";
 import type { Metadata } from "next";
 import { DM_Sans, Instrument_Serif } from "next/font/google";
 import "@workspace-template/ui/globals.css";
+import { Toaster } from "@workspace-template/ui/components/sonner";
 import { cn } from "@workspace-template/ui/lib/utils";
+import { SiteHeader } from "@/components/site-header";
 import { Providers } from "./providers";
 
 const dmSans = DM_Sans({
@@ -35,8 +37,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       suppressHydrationWarning
     >
-      <body>
-        <Providers>{children}</Providers>
+      <body className="flex min-h-screen flex-col">
+        <Providers>
+          <SiteHeader />
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

@@ -10,5 +10,19 @@
   },
   "javascript": {
     "globals": ["Bun"]
-  }
+  },
+  "overrides": [
+    {
+      // Inline handlers are idiomatic React 19; wrapping every one in useCallback
+      // adds noise without measurable benefit for this app's component sizes.
+      "includes": ["apps/web/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noJsxPropsBind": "off"
+          }
+        }
+      }
+    }
+  ]
 }
