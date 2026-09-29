@@ -1,3 +1,7 @@
+import {
+  Alert,
+  AlertDescription,
+} from "@workspace-template/ui/components/alert";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { authMode } from "@/lib/auth";
@@ -9,7 +13,7 @@ export const metadata: Metadata = { title: "Sign in" };
 export default async function SignInPage({
   searchParams,
 }: PageProps<"/sign-in">) {
-  const { next } = await searchParams;
+  const { error, next } = await searchParams;
   const target = safeNextPath(next);
   if (await getSession()) {
     redirect(target as never);
@@ -20,6 +24,14 @@ export default async function SignInPage({
       <p className="mt-2 text-muted-foreground">
         Sign in to save recipes, log what you cook, and keep private notes.
       </p>
+      {error && (
+        <Alert className="mt-6" variant="destructive">
+          <AlertDescription>
+            That account can&apos;t sign in here. Sign-in is limited to approved
+            accounts.
+          </AlertDescription>
+        </Alert>
+      )}
       <SignInForm
         emailPassword={authMode.emailPassword}
         googleEnabled={Boolean(authMode.google)}

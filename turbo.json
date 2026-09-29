@@ -6,6 +6,7 @@
     "build": {
       "dependsOn": ["^build", "^generate"],
       "env": [
+        "AUTH_ALLOWED_EMAILS",
         "BETTER_AUTH_SECRET",
         "BETTER_AUTH_URL",
         "GOOGLE_CLIENT_ID",

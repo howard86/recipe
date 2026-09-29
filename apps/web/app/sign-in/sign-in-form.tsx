@@ -40,7 +40,11 @@ function GoogleButton({ next }: { next: string }) {
   return (
     <Button
       onClick={() =>
-        authClient.signIn.social({ callbackURL: next, provider: "google" })
+        authClient.signIn.social({
+          callbackURL: next,
+          errorCallbackURL: `/sign-in?next=${encodeURIComponent(next)}`,
+          provider: "google",
+        })
       }
       size="lg"
       type="button"

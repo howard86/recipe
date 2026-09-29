@@ -2,21 +2,47 @@ import { prisma } from "@workspace-template/database";
 import { ensureProfile } from "@workspace-template/database/profiles";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { resolveAuthMode } from "./auth-mode";
+import { isEmailAllowed, resolveAuthMode } from "./auth-mode";
 
 export const authMode = resolveAuthMode(process.env);
+
+const NOT_ALLOWED = "This account isn't allowed to sign in here.";
+
+function assertAllowed(email: string | null | undefined) {
+  if (!isEmailAllowed(authMode, email)) {
+    throw new APIError("FORBIDDEN", { message: NOT_ALLOWED });
+  }
+}
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   databaseHooks: {
+    // The allowlist is checked when an account would be created and again on
+    // every sign-in, so removing an address locks out an existing account.
+    session: {
+      create: {
+        before: async (session) => {
+          const user = await prisma.user.findUnique({
+            select: { email: true },
+            where: { id: session.userId },
+          });
+          assertAllowed(user?.email);
+        },
+      },
+    },
     user: {
       create: {
         // Every user gets a Profile with a generated handle; /me prompts them
         // to pick their own before anything is shared.
         after: async (user) => {
           await ensureProfile(user.id, user.email || user.name || "cook");
+        },
+        before: (user) => {
+          assertAllowed(user.email);
+          return Promise.resolve();
         },
       },
     },
@@ -39,11 +65,12 @@ export const auth = betterAuth({
       return Promise.resolve();
     },
   },
+  // OAuth failures (e.g. an address outside the allowlist) land back on /sign-in?error=…
+  onAPIError: { errorURL: "/sign-in" },
   // nextCookies must stay last so Server Actions can set auth cookies.
   plugins: [nextCookies()],
-  // Serverless instances don't share memory, so counters live in Postgres.
-  // Better Auth's default rules already throttle sign-in and sign-up paths.
-  rateLimit: { storage: "database" },
+  // Sign-in is limited to AUTH_ALLOWED_EMAILS, so no rate limiting for now (ADR 0006).
+  rateLimit: { enabled: false },
   secret: process.env.BETTER_AUTH_SECRET,
   session: {
     // Every page reads the session; a signed 5-minute cookie cache saves a
