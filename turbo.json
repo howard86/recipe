@@ -35,6 +35,10 @@
       "dependsOn": ["^generate"],
       "cache": false
     },
+    "test": {
+      "dependsOn": ["^generate", "generate"],
+      "outputs": []
+    },
     "typecheck": {
       "dependsOn": ["^typecheck", "generate"],
       "inputs": [
