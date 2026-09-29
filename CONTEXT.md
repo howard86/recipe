@@ -2,7 +2,7 @@
 
 ## Product
 
-Recipe Box: signed-in people save recipes (typed in, or imported from a URL and reviewed before saving), cook from them on a phone, and track what they made. Design and phasing: [proposal 0001](docs/proposals/0001-recipe-sharing-tracking-site.md).
+Recipe Box: the owner saves recipes (typed in, or imported from a URL and reviewed before saving), cooks from them on a phone, and tracks what they made. Sign-in is limited to `AUTH_ALLOWED_EMAILS`; everyone else can read public and unlisted recipes. Design and phasing: [proposal 0001](docs/proposals/0001-recipe-sharing-tracking-site.md).
 
 - Recipes are private by default; owners can make them unlisted (link only, `noindex`) or public (browse, search, JSON-LD).
 - Tracking is personal: favourites, a dated cook log with 1 to 5 stars and notes, and one private note per recipe.
