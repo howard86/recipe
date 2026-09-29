@@ -2,9 +2,9 @@ import type {
   SearchSort,
   Visibility,
 } from "@workspace-template/data/recipe/schema";
-import { Prisma } from "../generated/client";
 import { prisma } from "./client";
 import type { RecipeCard } from "./recipes";
+import { empty, join, render, type SqlFragment, sql } from "./sql";
 
 export interface SearchParams {
   cuisine?: string;
@@ -62,21 +62,19 @@ function decodeCursor(cursor: string): { id: string; sortedAt: Date } | null {
   return id && !Number.isNaN(sortedAt.getTime()) ? { id, sortedAt } : null;
 }
 
-function tagFilter(slug: string, kind?: "CUISINE" | "DIET"): Prisma.Sql {
-  const kindClause = kind
-    ? Prisma.sql`AND t.kind = ${kind}::"TagKind"`
-    : Prisma.empty;
-  return Prisma.sql`EXISTS (
+function tagFilter(slug: string, kind?: "CUISINE" | "DIET"): SqlFragment {
+  const kindClause = kind ? sql`AND t.kind = ${kind}::"TagKind"` : empty;
+  return sql`EXISTS (
     SELECT 1 FROM "RecipeTag" rt JOIN "Tag" t ON t.id = rt."tagId"
     WHERE rt."recipeId" = r.id AND t.slug = ${slug} ${kindClause}
   )`;
 }
 
-function filterClauses(params: SearchParams): Prisma.Sql[] {
-  const clauses: Prisma.Sql[] = [
+function filterClauses(params: SearchParams): SqlFragment[] {
+  const clauses: SqlFragment[] = [
     params.mineFor
-      ? Prisma.sql`r."authorId" = ${params.mineFor}`
-      : Prisma.sql`r.visibility = 'PUBLIC'`,
+      ? sql`r."authorId" = ${params.mineFor}`
+      : sql`r.visibility = 'PUBLIC'`,
   ];
   for (const slug of params.tags ?? []) {
     clauses.push(tagFilter(slug));
@@ -88,34 +86,34 @@ function filterClauses(params: SearchParams): Prisma.Sql[] {
     clauses.push(tagFilter(params.diet, "DIET"));
   }
   if (params.maxTime) {
-    clauses.push(Prisma.sql`r."totalMinutes" <= ${params.maxTime}`);
+    clauses.push(sql`r."totalMinutes" <= ${params.maxTime}`);
   }
   return clauses;
 }
 
 type Mode = "fuzzy" | "text" | "browse";
 
-function matchClause(mode: Mode, q: string): Prisma.Sql {
+function matchClause(mode: Mode, q: string): SqlFragment {
   if (mode === "text") {
-    return Prisma.sql`r."searchVector" @@ websearch_to_tsquery('english', ${q})`;
+    return sql`r."searchVector" @@ websearch_to_tsquery('english', ${q})`;
   }
   if (mode === "fuzzy") {
-    return Prisma.sql`word_similarity(${q}, r.title) >= ${FUZZY_THRESHOLD}`;
+    return sql`word_similarity(${q}, r.title) >= ${FUZZY_THRESHOLD}`;
   }
-  return Prisma.sql`TRUE`;
+  return sql`TRUE`;
 }
 
-function orderClause(mode: Mode, sort: SearchSort, q: string): Prisma.Sql {
+function orderClause(mode: Mode, sort: SearchSort, q: string): SqlFragment {
   if (sort === "quickest") {
-    return Prisma.sql`r."totalMinutes" ASC NULLS LAST, r.id`;
+    return sql`r."totalMinutes" ASC NULLS LAST, r.id`;
   }
   if (sort === "relevance" && mode === "text") {
-    return Prisma.sql`ts_rank(r."searchVector", websearch_to_tsquery('english', ${q})) DESC, "sortedAt" DESC, r.id DESC`;
+    return sql`ts_rank(r."searchVector", websearch_to_tsquery('english', ${q})) DESC, "sortedAt" DESC, r.id DESC`;
   }
   if (sort === "relevance" && mode === "fuzzy") {
-    return Prisma.sql`word_similarity(${q}, r.title) DESC, "sortedAt" DESC, r.id DESC`;
+    return sql`word_similarity(${q}, r.title) DESC, "sortedAt" DESC, r.id DESC`;
   }
-  return Prisma.sql`"sortedAt" DESC, r.id DESC`;
+  return sql`"sortedAt" DESC, r.id DESC`;
 }
 
 function runQuery(
@@ -130,12 +128,12 @@ function runQuery(
     sort === "newest" && params.cursor ? decodeCursor(params.cursor) : null;
   if (cursor) {
     clauses.push(
-      Prisma.sql`(COALESCE(r."publishedAt", r."createdAt"), r.id) < (${cursor.sortedAt}, ${cursor.id})`
+      sql`(COALESCE(r."publishedAt", r."createdAt"), r.id) < (${cursor.sortedAt}, ${cursor.id})`
     );
   }
   const offset =
     sort === "newest" ? 0 : Math.max(0, (params.page ?? 1) - 1) * limit;
-  return prisma.$queryRaw<SearchRow[]>`
+  const { text, values } = render(sql`
     SELECT r.id, r.slug, r.title, r.description, r."totalMinutes", r.servings,
       r.visibility, r."sourceName", r."publishedAt",
       COALESCE(r."publishedAt", r."createdAt") AS "sortedAt",
@@ -144,10 +142,11 @@ function runQuery(
     JOIN "User" u ON u.id = r."authorId"
     LEFT JOIN "Profile" p ON p."userId" = r."authorId"
     LEFT JOIN "Image" i ON i.id = r."coverImageId"
-    WHERE ${Prisma.join(clauses, " AND ")}
+    WHERE ${join(clauses, " AND ")}
     ORDER BY ${orderClause(mode, sort, q)}
     LIMIT ${limit + 1} OFFSET ${offset}
-  `;
+  `);
+  return prisma.$queryRawUnsafe<SearchRow[]>(text, ...values);
 }
 
 function toCard({ sortedAt: _sortedAt, ...row }: SearchRow): RecipeCard {

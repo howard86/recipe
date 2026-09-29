@@ -4,6 +4,7 @@ import {
   listCookLogs,
   listFavorites,
 } from "@workspace-template/database/tracking";
+import { Button } from "@workspace-template/ui/components/button";
 import {
   Empty,
   EmptyContent,
@@ -11,6 +12,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@workspace-template/ui/components/empty";
+import { Input } from "@workspace-template/ui/components/input";
 import { Skeleton } from "@workspace-template/ui/components/skeleton";
 import { cn } from "@workspace-template/ui/lib/utils";
 import type { Metadata, Route } from "next";
@@ -155,6 +157,20 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
         )}
       </div>
       {showBanner && <HandleBanner handle={profile.handle} />}
+      <search>
+        <form action="/recipes" className="flex max-w-xl gap-2">
+          <input name="mine" type="hidden" value="1" />
+          <Input
+            aria-label="Search my recipes"
+            name="q"
+            placeholder="Search my recipes"
+            type="search"
+          />
+          <Button type="submit" variant="outline">
+            Search
+          </Button>
+        </form>
+      </search>
       <nav aria-label="My kitchen sections" className="flex gap-1 border-b">
         {TABS.map((item) => (
           <Link

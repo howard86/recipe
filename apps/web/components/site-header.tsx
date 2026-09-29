@@ -13,6 +13,9 @@ export async function SiteHeader() {
           {appConfig.name}
         </Link>
         <nav className="flex items-center gap-1">
+          <Link className={buttonClass({ variant: "ghost" })} href="/recipes">
+            Browse
+          </Link>
           {session ? (
             <>
               <Link className={buttonClass({ variant: "ghost" })} href="/me">

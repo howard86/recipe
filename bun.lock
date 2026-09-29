@@ -86,6 +86,7 @@
         "dotenv": "^18.0.4",
       },
       "devDependencies": {
+        "@types/bun": "^1.4.2",
         "@workspace-template/typescript-config": "*",
         "prisma": "7.10.0",
         "tsx": "4.23.15",
