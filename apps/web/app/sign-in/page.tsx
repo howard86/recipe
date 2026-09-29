@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { googleEnabled } from "@/lib/auth";
+import { authMode } from "@/lib/auth";
 import { getSession, safeNextPath } from "@/lib/session";
 import { SignInForm } from "./sign-in-form";
 
@@ -20,7 +20,11 @@ export default async function SignInPage({
       <p className="mt-2 text-muted-foreground">
         Sign in to save recipes, log what you cook, and keep private notes.
       </p>
-      <SignInForm googleEnabled={googleEnabled} next={target} />
+      <SignInForm
+        emailPassword={authMode.emailPassword}
+        googleEnabled={Boolean(authMode.google)}
+        next={target}
+      />
     </main>
   );
 }

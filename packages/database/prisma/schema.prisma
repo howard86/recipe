@@ -80,6 +80,14 @@ model Verification {
   @@index([identifier])
 }
 
+/// Better Auth rate-limit counters (rateLimit.storage = "database").
+model RateLimit {
+  id          String @id @default(cuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+}
+
 enum Visibility {
   PRIVATE
   UNLISTED
