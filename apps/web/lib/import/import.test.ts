@@ -1,4 +1,3 @@
-// fetchRecipePage runs on Node (Bun stubs undici): see safe-fetch.node.ts.
 import { describe, expect, test } from "bun:test";
 import { isBlockedAddress } from "./address";
 import { takeIpToken } from "./rate-limit";

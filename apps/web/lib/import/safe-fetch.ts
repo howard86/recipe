@@ -1,6 +1,7 @@
 import { lookup as dnsLookup, type LookupAddress } from "node:dns";
+import http, { type IncomingMessage } from "node:http";
+import https from "node:https";
 import type { LookupFunction } from "node:net";
-import { Agent, request } from "undici";
 import { isBlockedAddress } from "./address";
 import { ImportError } from "./errors";
 import { validateImportUrl } from "./url";
@@ -66,13 +67,13 @@ function decode(buffer: Uint8Array, contentType: string): string {
   }
 }
 
-async function readCapped(body: AsyncIterable<Uint8Array>, maxBytes: number) {
+async function readCapped(body: IncomingMessage, maxBytes: number) {
   const chunks: Uint8Array[] = [];
   let total = 0;
-  for await (const chunk of body) {
+  for await (const chunk of body as AsyncIterable<Uint8Array>) {
     total += chunk.byteLength;
     if (total > maxBytes) {
-      // Leaving the loop closes the stream without reading the rest.
+      // Leaving the loop destroys the stream without reading the rest.
       break;
     }
     chunks.push(chunk);
@@ -105,37 +106,43 @@ function mapStatus(status: number): ImportError {
   });
 }
 
-function isAbort(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    (error.name === "TimeoutError" ||
-      error.name === "AbortError" ||
-      error.name === "HeadersTimeoutError")
-  );
+interface HopContext {
+  lookup: LookupFunction;
+  maxBytes: number;
+  signal: AbortSignal;
+  validate: (raw: string) => URL;
 }
 
 type Hop = { redirect: URL } | { finalUrl: string; html: string };
 
-async function requestOnce(
-  url: URL,
-  context: {
-    dispatcher: Agent;
-    maxBytes: number;
-    signal: AbortSignal;
-    validate: (raw: string) => URL;
-  }
-): Promise<Hop> {
-  const { body, headers, statusCode } = await request(url, {
-    dispatcher: context.dispatcher,
-    headers: {
-      accept: "text/html,application/xhtml+xml",
-      "user-agent": USER_AGENT,
-    },
-    method: "GET",
-    signal: context.signal,
+/**
+ * One GET with `agent: false`, so every hop opens a fresh socket through the
+ * guarded lookup (a pooled keep-alive socket would skip it). TLS still
+ * verifies the certificate against the hostname, not the pinned address.
+ */
+function get(url: URL, context: HopContext): Promise<IncomingMessage> {
+  const transport = url.protocol === "https:" ? https : http;
+  return new Promise((resolve, reject) => {
+    const request = transport.get(url, {
+      agent: false,
+      headers: {
+        accept: "text/html,application/xhtml+xml",
+        "user-agent": USER_AGENT,
+      },
+      lookup: context.lookup,
+      signal: context.signal,
+    });
+    request.once("response", resolve);
+    request.once("error", reject);
   });
-  if (statusCode >= 300 && statusCode < 400) {
-    await body.dump();
+}
+
+async function requestOnce(url: URL, context: HopContext): Promise<Hop> {
+  const response = await get(url, context);
+  const status = response.statusCode ?? 0;
+  const { headers } = response;
+  if (status >= 300 && status < 400) {
+    response.destroy();
     const location = headerValue(headers.location);
     if (!location) {
       throw new ImportError("FETCH_FAILED", {
@@ -144,21 +151,28 @@ async function requestOnce(
     }
     return { redirect: context.validate(new URL(location, url).toString()) };
   }
-  if (statusCode < 200 || statusCode >= 300) {
-    await body.dump();
-    throw mapStatus(statusCode);
+  if (status < 200 || status >= 300) {
+    response.destroy();
+    throw mapStatus(status);
   }
   const contentType = headerValue(headers["content-type"]);
   if (!HTML_TYPE_PATTERN.test(contentType)) {
-    await body.dump();
+    response.destroy();
     throw new ImportError("NOT_HTML");
   }
   if (Number(headerValue(headers["content-length"])) > context.maxBytes) {
-    await body.dump();
+    response.destroy();
     throw new ImportError("TOO_LARGE");
   }
-  const buffer = await readCapped(body, context.maxBytes);
+  const buffer = await readCapped(response, context.maxBytes);
   return { finalUrl: url.toString(), html: decode(buffer, contentType) };
+}
+
+function isAbort(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.name === "TimeoutError" || error.name === "AbortError")
+  );
 }
 
 function toImportError(error: unknown, signal: AbortSignal): ImportError {
@@ -192,15 +206,10 @@ export async function fetchRecipePage(
 ): Promise<{ finalUrl: string; html: string }> {
   const isAllowed =
     options.isAllowedAddress ?? ((address) => !isBlockedAddress(address));
-  const timeoutMs = options.timeoutMs ?? TIMEOUT_MS;
-  const dispatcher = new Agent({
-    connect: { lookup: guardedLookup(isAllowed) },
-    connectTimeout: timeoutMs,
-  });
-  const signal = AbortSignal.timeout(timeoutMs);
+  const signal = AbortSignal.timeout(options.timeoutMs ?? TIMEOUT_MS);
   const validate = options.validateUrl ?? validateImportUrl;
-  const context = {
-    dispatcher,
+  const context: HopContext = {
+    lookup: guardedLookup(isAllowed),
     maxBytes: options.maxBytes ?? MAX_BYTES,
     signal,
     validate,
@@ -218,7 +227,5 @@ export async function fetchRecipePage(
     throw new ImportError("FETCH_FAILED", { message: "Too many redirects" });
   } catch (error) {
     throw toImportError(error, signal);
-  } finally {
-    await dispatcher.close().catch(() => undefined);
   }
 }
