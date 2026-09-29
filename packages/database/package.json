@@ -3,27 +3,34 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": "./src/client.ts"
+    ".": "./src/client.ts",
+    "./imports": "./src/imports.ts",
+    "./profiles": "./src/profiles.ts",
+    "./recipes": "./src/recipes.ts",
+    "./search": "./src/search.ts",
+    "./tracking": "./src/tracking.ts"
   },
   "scripts": {
-    "db:migrate:deploy": "prisma migrate deploy",
-    "db:migrate:dev": "prisma migrate dev",
-    "db:push": "prisma db push",
-    "db:seed": "tsx src/seed.ts",
-    "generate": "prisma generate",
-    "studio": "prisma studio",
-    "typecheck": "tsc --noEmit"
+    "db:migrate:deploy": "bun --bun prisma migrate deploy",
+    "db:migrate:dev": "bun --bun prisma migrate dev",
+    "db:push": "bun --bun prisma db push",
+    "db:seed": "bun src/seed.ts",
+    "generate": "bun --bun prisma generate",
+    "studio": "bun --bun prisma studio",
+    "test": "bun test",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "@prisma/client-runtime-utils": "7.10.0",
+    "@workspace-template/data": "*",
     "dotenv": "^18.0.4"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.2",
     "@workspace-template/typescript-config": "*",
     "prisma": "7.10.0",
-    "tsx": "4.23.15",
     "typescript": "7.0.2"
   }
 }

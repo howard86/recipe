@@ -3,6 +3,7 @@
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "generated"],
   "compilerOptions": {
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "types": ["bun"]
   }
 }

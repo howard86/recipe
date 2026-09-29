@@ -3,12 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./recipe/*": "./src/recipe/*.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "test": "bun test",
+    "typecheck": "bun --bun tsc --noEmit"
+  },
+  "dependencies": {
+    "schema-dts": "^2.0.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.2",
     "@workspace-template/typescript-config": "*",
     "typescript": "7.0.2"
   }

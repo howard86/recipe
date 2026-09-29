@@ -10,6 +10,6 @@ command -v gitleaks >/dev/null 2>&1 || {
 }
 
 bun run check
-bun x turbo run typecheck
+bun x --bun turbo run typecheck
 typos
 gitleaks git --redact --no-banner

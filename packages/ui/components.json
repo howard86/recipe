@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-rhea",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "iconLibrary": "phosphor",
+  "aliases": {
+    "components": "@workspace-template/ui/components",
+    "utils": "@workspace-template/ui/lib/utils",
+    "hooks": "@workspace-template/ui/hooks",
+    "lib": "@workspace-template/ui/lib",
+    "ui": "@workspace-template/ui/components"
+  },
+  "rtl": false,
+  "menuColor": "default",
+  "menuAccent": "bold"
+}

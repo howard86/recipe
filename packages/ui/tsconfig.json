@@ -1,0 +1,11 @@
+{
+  "extends": "@workspace-template/typescript-config/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@workspace-template/ui/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules"]
+}

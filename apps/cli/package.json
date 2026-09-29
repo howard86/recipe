@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
     "@workspace-template/data": "*"
