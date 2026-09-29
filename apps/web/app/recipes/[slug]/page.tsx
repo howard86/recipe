@@ -17,7 +17,9 @@ import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
 import { IngredientsCard } from "@/components/recipe/ingredients-card";
 import { RecipeTimes, VisibilityBadge } from "@/components/recipe/recipe-meta";
 import { RemixButton } from "@/components/recipe/remix-button";
+import { SavedToast } from "@/components/recipe/saved-toast";
 import { SharingDialog } from "@/components/recipe/sharing-dialog";
+import { buttonClass } from "@/lib/button-class";
 import { getViewerId } from "@/lib/session";
 import { absoluteUrl } from "@/lib/site";
 
@@ -163,14 +165,19 @@ function Steps({ steps }: { steps: RecipeDetail["steps"] }) {
 
 export default async function RecipePage({
   params,
+  searchParams,
 }: PageProps<"/recipes/[slug]">) {
   const { slug } = await params;
+  const { saved } = await searchParams;
   const { recipe, viewerId } = await loadViewable(slug);
   const isOwner = viewerId === recipe.author.id;
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10">
       {recipe.visibility === "PUBLIC" && <RecipeJsonLd recipe={recipe} />}
+      {isOwner && (
+        <SavedToast saved={typeof saved === "string" ? saved : undefined} />
+      )}
       <RemixBanner recipe={recipe} />
       <header className="grid gap-8 md:grid-cols-[1fr_minmax(0,22rem)]">
         <div className="space-y-5">
@@ -197,6 +204,12 @@ export default async function RecipePage({
           <div className="flex flex-wrap gap-2">
             {isOwner ? (
               <>
+                <Link
+                  className={buttonClass({ variant: "outline" })}
+                  href={`/recipes/${recipe.slug}/edit`}
+                >
+                  Edit
+                </Link>
                 <SharingDialog
                   imported={recipe.sourceType === "URL_IMPORT"}
                   recipeId={recipe.id}

@@ -278,20 +278,11 @@ export interface ScalableLine {
   unit?: string | null;
 }
 
-/**
- * Renders a line for `factor` × the recipe's servings. Lines without a parsed
- * quantity come back unchanged with `scaled: false`, so the UI can mark them.
- */
-export function scaleLine(
-  line: ScalableLine,
-  factor: number
-): { scaled: boolean; text: string } {
-  if (!line.quantity) {
-    return { scaled: false, text: line.raw };
-  }
-  if (factor === 1) {
-    return { scaled: true, text: line.raw };
-  }
+/** Rebuilds a parsed line with the quantity multiplied by `factor`. */
+export function formatLine(
+  line: ScalableLine & { quantity: number },
+  factor = 1
+): string {
   const quantity = line.quantity * factor;
   const max = line.quantityMax ? line.quantityMax * factor : null;
   const amount = max
@@ -300,5 +291,23 @@ export function scaleLine(
   const unit = line.unit ? ` ${formatUnit(line.unit, max ?? quantity)}` : "";
   const name = line.name ? ` ${line.name}` : "";
   const note = line.note ? `, ${line.note}` : "";
-  return { scaled: true, text: `${amount}${unit}${name}${note}` };
+  return `${amount}${unit}${name}${note}`;
+}
+
+/**
+ * Renders a line for `factor` × the recipe's servings. Lines without a parsed
+ * quantity come back unchanged with `scaled: false`, so the UI can mark them.
+ */
+export function scaleLine(
+  line: ScalableLine,
+  factor: number
+): { scaled: boolean; text: string } {
+  const { quantity } = line;
+  if (!quantity) {
+    return { scaled: false, text: line.raw };
+  }
+  if (factor === 1) {
+    return { scaled: true, text: line.raw };
+  }
+  return { scaled: true, text: formatLine({ ...line, quantity }, factor) };
 }

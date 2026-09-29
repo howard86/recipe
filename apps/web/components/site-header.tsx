@@ -1,6 +1,6 @@
 import { appConfig } from "@workspace-template/data";
-import { buttonVariants } from "@workspace-template/ui/components/button";
 import Link from "next/link";
+import { buttonClass } from "@/lib/button-class";
 import { getSession } from "@/lib/session";
 import { SignOutButton } from "./sign-out-button";
 
@@ -16,13 +16,13 @@ export async function SiteHeader() {
           {session ? (
             <SignOutButton />
           ) : (
-            <Link
-              className={buttonVariants({ variant: "ghost" })}
-              href="/sign-in"
-            >
+            <Link className={buttonClass({ variant: "ghost" })} href="/sign-in">
               Sign in
             </Link>
           )}
+          <Link className={buttonClass()} href="/recipes/new">
+            Add a recipe
+          </Link>
         </nav>
       </div>
     </header>

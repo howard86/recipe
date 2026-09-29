@@ -1,14 +1,23 @@
 "use server";
 
-import { VISIBILITIES } from "@workspace-template/data/recipe/schema";
 import {
+  RecipeInputSchema,
+  VISIBILITIES,
+} from "@workspace-template/data/recipe/schema";
+import {
+  createRecipe,
   deleteRecipe,
   forkRecipe,
   setRecipeVisibility,
+  updateRecipe,
 } from "@workspace-template/database/recipes";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import {
+  type EditorPayload,
+  toRecipeFormValue,
+} from "@/components/recipe-editor/payload";
 import { requireUser } from "@/lib/session";
 
 export interface ActionResult {
@@ -17,6 +26,71 @@ export interface ActionResult {
 }
 
 const VisibilitySchema = z.enum(VISIBILITIES);
+
+export interface EditorState {
+  fieldErrors?: Record<string, string[] | undefined>;
+  formError?: string;
+}
+
+/** Imported JSON-LD above this size is dropped rather than stored. */
+const MAX_JSON_LD_BYTES = 200_000;
+
+function parseEditorForm(formData: FormData) {
+  let payload: EditorPayload;
+  try {
+    payload = JSON.parse(String(formData.get("payload") ?? ""));
+  } catch {
+    return {
+      error: { formError: "The form could not be read. Reload and try again." },
+    };
+  }
+  const value = toRecipeFormValue(payload);
+  if (JSON.stringify(value.importedJsonLd ?? null).length > MAX_JSON_LD_BYTES) {
+    value.importedJsonLd = undefined;
+  }
+  const parsed = RecipeInputSchema.safeParse(value);
+  if (!parsed.success) {
+    const { fieldErrors, formErrors } = z.flattenError(parsed.error);
+    return {
+      error: {
+        fieldErrors,
+        formError: formErrors[0] ?? "Some fields need attention.",
+      } satisfies EditorState,
+    };
+  }
+  return { data: parsed.data };
+}
+
+export async function createRecipeAction(
+  _state: EditorState,
+  formData: FormData
+): Promise<EditorState> {
+  const user = await requireUser("/recipes/new");
+  const { data, error } = parseEditorForm(formData);
+  if (!data) {
+    return error;
+  }
+  const recipe = await createRecipe(user.id, data);
+  redirect(`/recipes/${recipe.slug}?saved=${data.visibility.toLowerCase()}`);
+}
+
+export async function updateRecipeAction(
+  recipeId: string,
+  _state: EditorState,
+  formData: FormData
+): Promise<EditorState> {
+  const user = await requireUser();
+  const { data, error } = parseEditorForm(formData);
+  if (!data) {
+    return error;
+  }
+  const recipe = await updateRecipe(recipeId, user.id, data);
+  if (!recipe) {
+    return { formError: "Recipe not found." };
+  }
+  revalidatePath(`/recipes/${recipe.slug}`);
+  redirect(`/recipes/${recipe.slug}?saved=updated`);
+}
 
 export async function setVisibilityAction(
   recipeId: string,

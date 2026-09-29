@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  formatLine,
   formatQuantity,
   parseIngredient,
   parseQuantity,
@@ -102,5 +103,12 @@ describe("quantities", () => {
       scaled: false,
       text: "Salt to taste",
     });
+  });
+
+  test("formatLine rebuilds the parse", () => {
+    const parsed = parseIngredient("2-3 cloves garlic, minced");
+    expect(
+      formatLine({ ...parsed, quantity: parsed.quantity ?? 0, raw: "" })
+    ).toBe("2–3 cloves garlic, minced");
   });
 });
