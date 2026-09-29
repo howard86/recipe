@@ -6,7 +6,7 @@ Recipe Box: signed-in people save recipes (typed in, or imported from a URL and 
 
 - Recipes are private by default; owners can make them unlisted (link only, `noindex`) or public (browse, search, JSON-LD).
 - Tracking is personal: favourites, a dated cook log with 1 to 5 stars and notes, and one private note per recipe.
-- Anonymous visitors can read public and unlisted recipes and use cook mode; saving or logging goes through sign-in and replays the action.
+- Anonymous visitors can read public and unlisted recipes and use cook mode; saving or logging goes through sign-in and replays the action. Production sign-in is Google only; email and password (with verification) exist for local development ([ADR 0006](docs/adr/0006-production-authentication.md)).
 - Out of scope for now: meal planning, shopping lists, unit conversion, nutrition calculation, photo/OCR/AI import, social features, collections, public profiles, image uploads.
 - Decisions: [ADR 0002](docs/adr/0002-recipe-data-model-and-search.md) data model and search, [ADR 0003](docs/adr/0003-url-import-security.md) URL import security, [ADR 0004](docs/adr/0004-auth-onboarding-and-sharing.md) auth and sharing.
 
