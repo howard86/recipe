@@ -116,6 +116,22 @@ describe("helpers", () => {
     ]);
   });
 
+  test("keywords split on commas and semicolons", () => {
+    const recipe = extractRecipe(
+      page({
+        "@type": "Recipe",
+        keywords: "Bread;;Tangzhong, soft",
+        name: "Loaf",
+      }),
+      PAGE
+    );
+    expect(recipe?.tags.map((tag) => tag.name)).toEqual([
+      "Bread",
+      "Tangzhong",
+      "soft",
+    ]);
+  });
+
   test("looksPaywalled", () => {
     expect(looksPaywalled('<form><input type="password"></form>')).toBe(true);
     expect(looksPaywalled("<p>hello</p>")).toBe(false);

@@ -6,7 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "test": "bun test",
+    "test": "bun test && tsx --test lib/import/safe-fetch.node.ts",
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "@types/react-dom": "^19.3.0",
     "@workspace-template/typescript-config": "*",
     "tailwindcss": "^4.3.3",
+    "tsx": "4.23.15",
     "typescript": "7.0.2"
   }
 }

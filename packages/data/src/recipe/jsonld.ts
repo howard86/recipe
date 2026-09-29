@@ -58,6 +58,7 @@ const CAMEL_BOUNDARY_PATTERN = /([a-z])([A-Z])/g;
 const WWW_PREFIX_PATTERN = /^www\./;
 const DIET_SEPARATOR_PATTERN = /[\s-]+/g;
 const LESS_THAN_PATTERN = /</g;
+const TAG_SEPARATOR_PATTERN = /[,;]+/;
 const MAX_SEARCH_DEPTH = 6;
 
 function isObject(value: unknown): value is JsonObject {
@@ -229,7 +230,9 @@ function readYield(value: unknown) {
 
 function readTagNames(value: unknown): string[] {
   return toArray(value)
-    .flatMap((entry) => (typeof entry === "string" ? entry.split(",") : []))
+    .flatMap((entry) =>
+      typeof entry === "string" ? entry.split(TAG_SEPARATOR_PATTERN) : []
+    )
     .map((entry) => cleanText(entry))
     .filter(Boolean);
 }
