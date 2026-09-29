@@ -21,7 +21,8 @@ bun install
 cp .env.sample .env.local
 docker compose up -d db
 bun run generate
-bun run db:push
+bun run db:migrate:deploy
+bun run db:seed
 bun run dev
 ```
 
@@ -33,7 +34,7 @@ bun run fix         # Ultracite autofix
 bun run typecheck   # Turbo typecheck across workspaces
 bun run build       # Turbo build
 bun run generate    # Prisma generate
-bun run db:push     # Push Prisma schema to local DB
+bun run db:migrate:deploy  # Apply migrations (search needs the hand-written SQL; avoid db:push)
 bun run db:seed     # Seed local DB
 bun run dev         # Run persistent dev tasks
 ```

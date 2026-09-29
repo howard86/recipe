@@ -14,21 +14,28 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String?   @unique
-  emailVerified Boolean   @default(false)
+  email         String?        @unique
+  emailVerified Boolean        @default(false)
   image         String?
-  isAnonymous   Boolean?  @default(false)
-  role          UserRole  @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isAnonymous   Boolean?       @default(false)
+  role          UserRole       @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   accounts      Account[]
   sessions      Session[]
+  profile       Profile?
+  recipes       Recipe[]
+  favorites     Favorite[]
+  cookLogs      CookLog[]
+  recipeNotes   RecipeNote[]
+  images        Image[]
+  recipeImports RecipeImport[]
 }
 
 model Account {
-  id                    String   @id @default(cuid())
+  id                    String    @id @default(cuid())
   userId                String
   accountId             String
   providerId            String
@@ -39,9 +46,9 @@ model Account {
   scope                 String?
   idToken               String?
   password              String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
   @@index([userId])
@@ -71,4 +78,222 @@ model Verification {
 
   @@unique([identifier, value])
   @@index([identifier])
+}
+
+enum Visibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+enum RecipeSourceType {
+  MANUAL
+  URL_IMPORT
+  FORK
+}
+
+enum TagKind {
+  GENERAL
+  CUISINE
+  COURSE
+  DIET
+}
+
+enum StorageProvider {
+  VERCEL_BLOB
+  S3
+  EXTERNAL
+}
+
+enum ImportStatus {
+  SUCCEEDED
+  FAILED
+}
+
+model Profile {
+  userId        String   @id
+  handle        String   @unique
+  bio           String?
+  avatarImageId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarImage   Image?   @relation("ProfileAvatar", fields: [avatarImageId], references: [id], onDelete: SetNull)
+}
+
+model Recipe {
+  id              String                   @id @default(cuid())
+  slug            String                   @unique
+  authorId        String
+  title           String
+  description     String?
+  visibility      Visibility               @default(PRIVATE)
+  servings        Int?
+  yieldText       String?
+  prepMinutes     Int?
+  cookMinutes     Int?
+  totalMinutes    Int?
+  sourceType      RecipeSourceType         @default(MANUAL)
+  sourceUrl       String?
+  sourceName      String?
+  forkedFromId    String?
+  coverImageId    String?
+  nutrition       Json?
+  importedJsonLd  Json?
+  /// Denormalised ingredient names for full-text search; rewritten with the ingredients.
+  ingredientsText String                   @default("")
+  /// Generated column (see the recipes migration); read only through raw SQL.
+  searchVector    Unsupported("tsvector")? @default(dbgenerated())
+  publishedAt     DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  forkedFrom  Recipe?           @relation("RecipeFork", fields: [forkedFromId], references: [id], onDelete: SetNull)
+  forks       Recipe[]          @relation("RecipeFork")
+  coverImage  Image?            @relation("RecipeCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  ingredients IngredientLine[]
+  steps       InstructionStep[]
+  tags        RecipeTag[]
+  favorites   Favorite[]
+  cookLogs    CookLog[]
+  notes       RecipeNote[]
+  imports     RecipeImport[]
+
+  @@index([authorId, updatedAt])
+  @@index([visibility, publishedAt])
+  @@index([forkedFromId])
+  @@index([searchVector], type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "Recipe_title_trgm_idx")
+}
+
+model IngredientLine {
+  id          String   @id @default(cuid())
+  recipeId    String
+  position    Int
+  section     String?
+  raw         String
+  quantity    Decimal? @db.Decimal(10, 3)
+  quantityMax Decimal? @db.Decimal(10, 3)
+  unit        String?
+  name        String?
+  note        String?
+  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId, position])
+}
+
+model InstructionStep {
+  id       String  @id @default(cuid())
+  recipeId String
+  position Int
+  section  String?
+  text     String
+  imageId  String?
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  image    Image?  @relation("StepImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@index([recipeId, position])
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  slug    String      @unique
+  name    String
+  kind    TagKind     @default(GENERAL)
+  recipes RecipeTag[]
+
+  @@index([kind, name])
+}
+
+model RecipeTag {
+  recipeId String
+  tagId    String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, tagId])
+  @@index([tagId])
+}
+
+model Favorite {
+  userId    String
+  recipeId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, recipeId])
+  @@index([recipeId])
+}
+
+model CookLog {
+  id           String   @id @default(cuid())
+  userId       String
+  recipeId     String
+  cookedAt     DateTime
+  /// 1 to 5, enforced by a CHECK constraint in the recipes migration.
+  rating       Int?
+  notes        String?
+  servingsMade Int?
+  imageId      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe       Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  image        Image?   @relation("CookLogImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@index([userId, cookedAt])
+  @@index([recipeId, userId])
+}
+
+model RecipeNote {
+  id        String   @id @default(cuid())
+  userId    String
+  recipeId  String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+}
+
+model Image {
+  id          String            @id @default(cuid())
+  ownerId     String
+  provider    StorageProvider
+  storageKey  String
+  url         String
+  contentType String?
+  byteSize    Int?
+  width       Int?
+  height      Int?
+  alt         String?
+  createdAt   DateTime          @default(now())
+  owner       User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  recipeCover Recipe[]          @relation("RecipeCover")
+  stepImages  InstructionStep[] @relation("StepImage")
+  cookLogs    CookLog[]         @relation("CookLogImage")
+  avatars     Profile[]         @relation("ProfileAvatar")
+
+  @@unique([provider, storageKey])
+  @@index([ownerId])
+}
+
+model RecipeImport {
+  id            String       @id @default(cuid())
+  userId        String
+  url           String
+  normalizedUrl String
+  status        ImportStatus
+  errorCode     String?
+  recipeId      String?
+  createdAt     DateTime     @default(now())
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe        Recipe?      @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, normalizedUrl])
 }
