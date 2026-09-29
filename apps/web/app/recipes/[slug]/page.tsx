@@ -238,6 +238,7 @@ export default async function RecipePage({
         <IngredientsCard
           baseServings={recipe.servings}
           ingredients={recipe.ingredients}
+          slug={recipe.slug}
         />
         <section aria-labelledby="steps-heading" className="space-y-4">
           <h2 className="font-heading text-3xl" id="steps-heading">

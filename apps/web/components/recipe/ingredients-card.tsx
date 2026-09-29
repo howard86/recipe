@@ -1,16 +1,21 @@
 "use client";
 
 import type { IngredientLineView } from "@workspace-template/database/recipes";
+import type { Route } from "next";
+import Link from "next/link";
 import { useState } from "react";
+import { buttonClass } from "@/lib/button-class";
 import { IngredientList, ServingsStepper } from "./ingredient-panel";
 
 /** The detail page's ingredient column: servings stepper plus scaled list. */
 export function IngredientsCard({
   baseServings,
   ingredients,
+  slug,
 }: {
   baseServings: number | null;
   ingredients: IngredientLineView[];
+  slug: string;
 }) {
   const [servings, setServings] = useState(baseServings);
   return (
@@ -32,6 +37,14 @@ export function IngredientsCard({
       ) : (
         <p className="text-muted-foreground">No ingredients listed.</p>
       )}
+      <Link
+        className={buttonClass({ className: "w-full", size: "lg" })}
+        href={
+          `/recipes/${slug}/cook${servings ? `?servings=${servings}` : ""}` as Route
+        }
+      >
+        Start cooking
+      </Link>
     </section>
   );
 }
