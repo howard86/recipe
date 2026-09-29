@@ -21,7 +21,7 @@ import { Textarea } from "@workspace-template/ui/components/textarea";
 import { cn } from "@workspace-template/ui/lib/utils";
 import {
   type ComponentProps,
-  type FormEvent,
+  type SubmitEvent,
   useState,
   useTransition,
 } from "react";
@@ -107,7 +107,7 @@ export function CookLogDialog({
   const [pending, startTransition] = useTransition();
   const editing = Boolean(initial?.id);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const servingsMade = Number.parseInt(

@@ -16,7 +16,7 @@ import {
 import { Input } from "@workspace-template/ui/components/input";
 import type { Route } from "next";
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { createRecipeAction } from "@/app/recipes/actions";
 import { editorValueFrom } from "@/components/recipe-editor/payload";
 import { RecipeEditor } from "@/components/recipe-editor/recipe-editor";
@@ -94,7 +94,7 @@ export function ImportFlow({ tagSuggestions }: { tagSuggestions: TagInput[] }) {
     );
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     runImport();
   }
