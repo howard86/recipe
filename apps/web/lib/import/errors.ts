@@ -6,7 +6,6 @@ export type ImportErrorCode =
   | "NOT_FOUND"
   | "NOT_HTML"
   | "PAYWALLED"
-  | "RATE_LIMITED"
   | "TIMEOUT"
   | "TOO_LARGE"
   | "UNAUTHENTICATED";
@@ -32,7 +31,6 @@ export const IMPORT_ERROR_STATUS: Record<ImportErrorCode, number> = {
   NOT_FOUND: 422,
   NOT_HTML: 422,
   PAYWALLED: 422,
-  RATE_LIMITED: 429,
   TIMEOUT: 504,
   TOO_LARGE: 422,
   UNAUTHENTICATED: 401,

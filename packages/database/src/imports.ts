@@ -1,20 +1,5 @@
 import { prisma } from "./client";
 
-/** `RecipeImport` doubles as the rate-limit ledger. */
-export function countImportsSince(userId: string, since: Date) {
-  return prisma.recipeImport.count({
-    where: { createdAt: { gte: since }, userId },
-  });
-}
-
-export function oldestImportSince(userId: string, since: Date) {
-  return prisma.recipeImport.findFirst({
-    orderBy: { createdAt: "asc" },
-    select: { createdAt: true },
-    where: { createdAt: { gte: since }, userId },
-  });
-}
-
 /** The user's own recipe previously saved from this normalised URL, if any. */
 export async function findImportedRecipe(
   userId: string,

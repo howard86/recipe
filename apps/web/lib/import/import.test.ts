@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 import { isBlockedAddress } from "./address";
-import { takeIpToken } from "./rate-limit";
 import { normalizeUrl, validateImportUrl } from "./url";
 
 describe("isBlockedAddress", () => {
@@ -60,16 +59,5 @@ describe("validateImportUrl", () => {
     expect(
       normalizeUrl(new URL("http://WWW.Example.com/r/1/?utm_source=x&b=2&a=1"))
     ).toBe("https://example.com/r/1?a=1&b=2");
-  });
-});
-
-describe("takeIpToken", () => {
-  test("caps requests per window", () => {
-    const now = 1_000_000;
-    expect(takeIpToken("203.0.113.9", 2, now).ok).toBe(true);
-    expect(takeIpToken("203.0.113.9", 2, now + 1).ok).toBe(true);
-    const denied = takeIpToken("203.0.113.9", 2, now + 2);
-    expect(denied.ok).toBe(false);
-    expect(denied.retryAfterSeconds).toBe(3600);
   });
 });

@@ -26,7 +26,7 @@ import type { ImportErrorCode } from "@/lib/import/errors";
 type ImportState =
   | { status: "idle" }
   | { host: string; status: "submitting" }
-  | { code: ImportErrorCode; retryAfter: number | null; status: "error" }
+  | { code: ImportErrorCode; status: "error" }
   | { duplicate: { slug: string; title: string }; status: "duplicate" }
   | { draft: ExtractedRecipe; importId: string; status: "preview" };
 
@@ -38,7 +38,6 @@ const ERROR_COPY: Record<ImportErrorCode, string> = {
   NOT_FOUND: "That page doesn't exist anymore.",
   NOT_HTML: "That link isn't a web page.",
   PAYWALLED: "That page looks like it needs a login or subscription.",
-  RATE_LIMITED: "You've imported a lot recently.",
   TIMEOUT: "The site took too long to respond.",
   TOO_LARGE: "That page is too large to read.",
   UNAUTHENTICATED: "Sign in again to import recipes.",
@@ -79,10 +78,8 @@ export function ImportFlow({ tagSuggestions }: { tagSuggestions: TagInput[] }) {
     }).catch(() => null);
     const data = await response?.json().catch(() => null);
     if (!(response?.ok && data)) {
-      const retryAfter = Number(response?.headers.get("Retry-After")) || null;
       setState({
         code: data?.code ?? "FETCH_FAILED",
-        retryAfter,
         status: "error",
       });
       return;
@@ -185,9 +182,6 @@ export function ImportFlow({ tagSuggestions }: { tagSuggestions: TagInput[] }) {
         >
           <AlertTitle>{ERROR_COPY[state.code]}</AlertTitle>
           <AlertDescription>
-            {state.code === "RATE_LIMITED" && state.retryAfter && (
-              <p>Try again in {Math.ceil(state.retryAfter / 60)} minutes.</p>
-            )}
             {(state.code === "NO_RECIPE_FOUND" ||
               state.code === "PAYWALLED") && (
               <Link
