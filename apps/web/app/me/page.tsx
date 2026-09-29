@@ -119,7 +119,7 @@ async function RecentlyCooked({ userId }: { userId: string }) {
           </li>
         ))}
       </ul>
-      <Link className="text-primary hover:underline" href="/me/cooked">
+      <Link className="text-link hover:underline" href="/me/cooked">
         See your full cook log
       </Link>
     </div>

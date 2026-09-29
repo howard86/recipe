@@ -176,7 +176,7 @@ export default async function BrowsePage({
         </h1>
         {viewerId && (
           <Link
-            className="text-primary hover:underline"
+            className="text-link hover:underline"
             href={browseHref(query, { mine: !query.mine })}
           >
             {query.mine ? "Search public recipes" : "Search only mine"}

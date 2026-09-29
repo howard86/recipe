@@ -30,7 +30,7 @@ export function FavoriteButton({
       variant="outline"
     >
       <HeartIcon
-        className={optimistic ? "text-primary" : undefined}
+        className={optimistic ? "text-link" : undefined}
         data-icon="inline-start"
         weight={optimistic ? "fill" : "regular"}
       />

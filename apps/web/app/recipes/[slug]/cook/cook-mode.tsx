@@ -333,7 +333,7 @@ export function CookMode({
                   />
                 )}
                 <Link
-                  className="text-primary underline-offset-4 hover:underline"
+                  className="text-link underline-offset-4 hover:underline"
                   href={`/recipes/${recipe.slug}`}
                 >
                   Back to the recipe

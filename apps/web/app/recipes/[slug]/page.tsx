@@ -95,7 +95,7 @@ function Attribution({ recipe }: { recipe: RecipeDetail }) {
           Imported from{" "}
           {recipe.sourceUrl ? (
             <a
-              className="text-primary underline-offset-4 hover:underline"
+              className="text-link underline-offset-4 hover:underline"
               href={recipe.sourceUrl}
               rel="noopener nofollow noreferrer"
               target="_blank"
@@ -126,7 +126,7 @@ function RemixBanner({ recipe }: { recipe: RecipeDetail }) {
         source.title
       ) : (
         <Link
-          className="text-primary hover:underline"
+          className="text-link hover:underline"
           href={`/recipes/${source.slug}`}
         >
           {source.title}
@@ -253,7 +253,7 @@ function YourKitchen({
               </p>
             )}
             <Link
-              className="text-primary hover:underline"
+              className="text-link hover:underline"
               href={`/me/cooked?recipe=${recipe.id}`}
             >
               See all your logs

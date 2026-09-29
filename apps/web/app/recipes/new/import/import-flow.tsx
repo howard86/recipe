@@ -191,7 +191,7 @@ export function ImportFlow({ tagSuggestions }: { tagSuggestions: TagInput[] }) {
             {(state.code === "NO_RECIPE_FOUND" ||
               state.code === "PAYWALLED") && (
               <Link
-                className="text-primary underline-offset-4 hover:underline"
+                className="text-link underline-offset-4 hover:underline"
                 href={writeItPath(url)}
               >
                 Write it yourself?

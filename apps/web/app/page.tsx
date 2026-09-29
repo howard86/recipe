@@ -42,7 +42,7 @@ export default async function HomePage() {
             <h2 className="font-heading text-3xl" id="recent-heading">
               Recently shared
             </h2>
-            <Link className="text-primary hover:underline" href="/recipes">
+            <Link className="text-link hover:underline" href="/recipes">
               See all
             </Link>
           </div>
