@@ -1,0 +1,9 @@
+set -e
+
+bun x lint-staged
+
+command -v gitleaks >/dev/null 2>&1 || {
+  echo "gitleaks not installed. install with: brew install gitleaks" >&2
+  exit 1
+}
+gitleaks git --staged --redact --no-banner

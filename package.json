@@ -1,0 +1,41 @@
+{
+  "name": "workspace-template",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "check": "ultracite check",
+    "db:migrate:deploy": "turbo run db:migrate:deploy",
+    "db:migrate:dev": "turbo run db:migrate:dev",
+    "db:push": "turbo run db:push",
+    "db:seed": "turbo run db:seed",
+    "dev": "turbo run dev",
+    "fix": "ultracite fix",
+    "generate": "turbo run generate",
+    "lint": "ultracite check",
+    "prepare": "husky",
+    "typecheck": "turbo run typecheck"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc,css,md,yml,yaml}": "ultracite fix"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prisma": "7.10.0",
+    "tsx": "4.23.15",
+    "turbo": "^2.11.5",
+    "ultracite": "7.12.2"
+  },
+  "packageManager": "bun@1.4.2"
+}

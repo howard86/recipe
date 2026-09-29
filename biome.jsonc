@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/biome/core"],
+  "files": {
+    // Claude worktrees under .claude/ carry their own root biome.jsonc, which
+    // Biome rejects as a nested root and aborts the whole check.
+    "includes": ["!!**/.claude"]
+  },
+  "javascript": {
+    "globals": ["Bun"]
+  }
+}

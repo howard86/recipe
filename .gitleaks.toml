@@ -1,0 +1,14 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Example environment documentation"
+paths = ['''(^|/)\.env\.sample$''']
+
+[[allowlists]]
+description = "Generated or build artifacts"
+paths = [
+  '''(^|/)generated/''',
+  '''(^|/)\.next/''',
+  '''(^|/)dist/''',
+]

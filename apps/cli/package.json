@@ -1,0 +1,17 @@
+{
+  "name": "@workspace-template/cli",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace-template/data": "*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@workspace-template/typescript-config": "*",
+    "typescript": "7.0.2"
+  }
+}

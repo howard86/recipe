@@ -1,0 +1,4 @@
+[default]
+extend-ignore-re = [
+  "[A-Za-z0-9+/]{40,}={0,2}",
+]

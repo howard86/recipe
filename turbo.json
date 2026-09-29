@@ -1,0 +1,51 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": ["NODE_ENV", "DATABASE_URL", "DIRECT_URL"],
+  "globalPassThroughEnv": ["PATH", "HOME", "SHELL"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "^generate"],
+      "env": [
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET"
+      ],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "db:migrate:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "db:migrate:deploy": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "generate": {
+      "dependsOn": ["^generate"],
+      "cache": false
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck", "generate"],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "**/*.ts",
+        "**/*.tsx",
+        "tsconfig.json",
+        "tsconfig.*.json"
+      ],
+      "outputs": []
+    }
+  }
+}

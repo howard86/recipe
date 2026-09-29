@@ -1,0 +1,15 @@
+set -e
+
+command -v typos >/dev/null 2>&1 || {
+  echo "typos not installed. install with: brew install typos-cli" >&2
+  exit 1
+}
+command -v gitleaks >/dev/null 2>&1 || {
+  echo "gitleaks not installed. install with: brew install gitleaks" >&2
+  exit 1
+}
+
+bun run check
+bun x turbo run typecheck
+typos
+gitleaks git --redact --no-banner

@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/*
+ * Default styling layer for this template: Tailwind CSS v4 (utility-first, CSS-first config).
+ * - The @theme block below is the one place generated projects retune brand tokens.
+ * - Dark mode is OS-driven via `prefers-color-scheme` (zero-JS). To switch to class-based
+ *   toggling, uncomment the @custom-variant line and add/remove `dark` on <html>.
+ */
+
+/* @custom-variant dark (&:where(.dark, .dark *)); */
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme {
+  --color-brand-50: oklch(0.97 0.014 254.604);
+  --color-brand-500: oklch(0.623 0.214 259.815);
+  --color-brand-600: oklch(0.546 0.245 262.881);
+  --color-brand-700: oklch(0.488 0.243 264.376);
+}
+
+:root {
+  color-scheme: light dark;
+}
