@@ -8,6 +8,10 @@ import {
   getRecipeBySlug,
   type RecipeDetail,
 } from "@workspace-template/database/recipes";
+import {
+  getViewerRecipeState,
+  type ViewerRecipeState,
+} from "@workspace-template/database/tracking";
 import { Badge } from "@workspace-template/ui/components/badge";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -19,8 +23,13 @@ import { RecipeTimes, VisibilityBadge } from "@/components/recipe/recipe-meta";
 import { RemixButton } from "@/components/recipe/remix-button";
 import { SavedToast } from "@/components/recipe/saved-toast";
 import { SharingDialog } from "@/components/recipe/sharing-dialog";
+import { CookLogDialog } from "@/components/tracking/cook-log-dialog";
+import { FavoriteButton } from "@/components/tracking/favorite-button";
+import { IntentReplay } from "@/components/tracking/intent-replay";
+import { RecipeNote } from "@/components/tracking/recipe-note";
+import { Stars } from "@/components/tracking/stars";
 import { buttonClass } from "@/lib/button-class";
-import { getViewerId } from "@/lib/session";
+import { getViewerId, signInPath } from "@/lib/session";
 import { absoluteUrl } from "@/lib/site";
 
 const loadRecipe = cache(getRecipeBySlug);
@@ -163,20 +172,128 @@ function Steps({ steps }: { steps: RecipeDetail["steps"] }) {
   );
 }
 
+const DATE_FORMAT = new Intl.DateTimeFormat("en", {
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+  year: "numeric",
+});
+
+function TrackingActions({
+  intent,
+  recipe,
+  state,
+}: {
+  intent: string | undefined;
+  recipe: RecipeDetail;
+  state: ViewerRecipeState | null;
+}) {
+  const here = `/recipes/${recipe.slug}`;
+  if (!state) {
+    return (
+      <>
+        <Link
+          className={buttonClass({ variant: "outline" })}
+          href={signInPath(`${here}?intent=save`)}
+        >
+          Save
+        </Link>
+        <Link
+          className={buttonClass({ variant: "outline" })}
+          href={signInPath(`${here}?intent=cooked`)}
+        >
+          I cooked this
+        </Link>
+      </>
+    );
+  }
+  return (
+    <>
+      <FavoriteButton favorited={state.favorited} recipeId={recipe.id} />
+      <CookLogDialog
+        defaultOpen={intent === "cooked"}
+        recipeId={recipe.id}
+        servings={recipe.servings}
+        triggerLabel="I cooked this"
+      />
+    </>
+  );
+}
+
+function YourKitchen({
+  recipe,
+  state,
+}: {
+  recipe: RecipeDetail;
+  state: ViewerRecipeState;
+}) {
+  return (
+    <section
+      aria-labelledby="your-kitchen-heading"
+      className="space-y-4 rounded-3xl bg-muted/50 p-5"
+    >
+      <h2 className="font-heading text-2xl" id="your-kitchen-heading">
+        Your notes
+      </h2>
+      <RecipeNote initial={state.note} recipeId={recipe.id} />
+      <div className="space-y-1 text-sm">
+        <h3 className="font-medium">Your history</h3>
+        {state.cookCount ? (
+          <>
+            <p className="text-muted-foreground">
+              Cooked {state.cookCount}{" "}
+              {state.cookCount === 1 ? "time" : "times"}, last on{" "}
+              {state.lastCookedAt
+                ? DATE_FORMAT.format(state.lastCookedAt)
+                : "unknown"}
+            </p>
+            {state.latestRating && (
+              <p className="flex items-center gap-2 text-muted-foreground">
+                Your latest rating <Stars rating={state.latestRating} />
+              </p>
+            )}
+            <Link
+              className="text-primary hover:underline"
+              href={`/me/cooked?recipe=${recipe.id}`}
+            >
+              See all your logs
+            </Link>
+          </>
+        ) : (
+          <p className="text-muted-foreground">
+            You haven&apos;t logged this one yet.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default async function RecipePage({
   params,
   searchParams,
 }: PageProps<"/recipes/[slug]">) {
   const { slug } = await params;
-  const { saved } = await searchParams;
+  const { intent, saved } = await searchParams;
   const { recipe, viewerId } = await loadViewable(slug);
   const isOwner = viewerId === recipe.author.id;
+  const state = viewerId
+    ? await getViewerRecipeState(viewerId, recipe.id)
+    : null;
+  const intentValue = typeof intent === "string" ? intent : undefined;
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10">
       {recipe.visibility === "PUBLIC" && <RecipeJsonLd recipe={recipe} />}
       {isOwner && (
         <SavedToast saved={typeof saved === "string" ? saved : undefined} />
+      )}
+      {state && (
+        <IntentReplay
+          favorited={state.favorited}
+          intent={intentValue}
+          recipeId={recipe.id}
+        />
       )}
       <RemixBanner recipe={recipe} />
       <header className="grid gap-8 md:grid-cols-[1fr_minmax(0,22rem)]">
@@ -202,6 +319,11 @@ export default async function RecipePage({
             </ul>
           )}
           <div className="flex flex-wrap gap-2">
+            <TrackingActions
+              intent={intentValue}
+              recipe={recipe}
+              state={state}
+            />
             {isOwner ? (
               <>
                 <Link
@@ -235,11 +357,14 @@ export default async function RecipePage({
         )}
       </header>
       <div className="mt-12 grid gap-12 md:grid-cols-[minmax(0,20rem)_1fr]">
-        <IngredientsCard
-          baseServings={recipe.servings}
-          ingredients={recipe.ingredients}
-          slug={recipe.slug}
-        />
+        <div className="space-y-8">
+          <IngredientsCard
+            baseServings={recipe.servings}
+            ingredients={recipe.ingredients}
+            slug={recipe.slug}
+          />
+          {state && <YourKitchen recipe={recipe} state={state} />}
+        </div>
         <section aria-labelledby="steps-heading" className="space-y-4">
           <h2 className="font-heading text-3xl" id="steps-heading">
             Steps

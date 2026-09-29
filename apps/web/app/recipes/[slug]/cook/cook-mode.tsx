@@ -15,6 +15,7 @@ import { Button } from "@workspace-template/ui/components/button";
 import { cn } from "@workspace-template/ui/lib/utils";
 import Link from "next/link";
 import { type TouchEvent, useEffect, useRef, useState } from "react";
+import { CookLogDialog } from "@/components/tracking/cook-log-dialog";
 import { useWakeLock } from "./use-wake-lock";
 
 export interface CookRecipe {
@@ -143,11 +144,13 @@ function IngredientChecklist({
 
 function StepDrawer({
   current,
+  note,
   onClose,
   onSelect,
   steps,
 }: {
   current: number;
+  note: string | null;
   onClose: () => void;
   onSelect: (index: number) => void;
   steps: CookRecipe["steps"];
@@ -183,15 +186,29 @@ function StepDrawer({
           </li>
         ))}
       </ol>
+      {note && (
+        <div className="rounded-2xl bg-muted/60 p-3">
+          <h3 className="font-medium text-sm">Your notes</h3>
+          <p className="whitespace-pre-line text-muted-foreground text-sm">
+            {note}
+          </p>
+        </div>
+      )}
     </nav>
   );
 }
 
 export function CookMode({
+  note,
   recipe,
   servings,
+  signedIn,
 }: {
+  /** The viewer's private note, shown in the step drawer. */
+  note: string | null;
   recipe: CookRecipe;
+  /** Signed-in viewers get the "Log this cook?" prompt on the finish screen. */
+  signedIn: boolean;
   servings: number | null;
 }) {
   const total = recipe.steps.length;
@@ -305,7 +322,16 @@ export function CookMode({
                 {total ? "That's everything." : "No steps yet."}
               </p>
               <p className="text-lg text-muted-foreground">Enjoy your meal.</p>
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {signedIn && total > 0 && (
+                  <CookLogDialog
+                    recipeId={recipe.id}
+                    servings={servings}
+                    triggerLabel="Log this cook?"
+                    triggerSize="lg"
+                    triggerVariant="default"
+                  />
+                )}
                 <Link
                   className="text-primary underline-offset-4 hover:underline"
                   href={`/recipes/${recipe.slug}`}
@@ -333,6 +359,7 @@ export function CookMode({
           {drawerOpen ? (
             <StepDrawer
               current={step}
+              note={note}
               onClose={() => setDrawerOpen(false)}
               onSelect={(index) => {
                 setStep(index);

@@ -116,7 +116,7 @@ export async function deleteRecipeAction(
   if (!(await deleteRecipe(recipeId, user.id))) {
     return { error: "Recipe not found." };
   }
-  redirect("/");
+  redirect("/me");
 }
 
 export async function forkRecipeAction(recipeId: string, slug: string) {

@@ -14,7 +14,12 @@ export async function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1">
           {session ? (
-            <SignOutButton />
+            <>
+              <Link className={buttonClass({ variant: "ghost" })} href="/me">
+                My kitchen
+              </Link>
+              <SignOutButton />
+            </>
           ) : (
             <Link className={buttonClass({ variant: "ghost" })} href="/sign-in">
               Sign in

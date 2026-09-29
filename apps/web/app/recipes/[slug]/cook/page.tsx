@@ -2,6 +2,7 @@ import {
   canViewRecipe,
   getRecipeBySlug,
 } from "@workspace-template/database/recipes";
+import { getViewerRecipeState } from "@workspace-template/database/tracking";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getViewerId } from "@/lib/session";
@@ -25,12 +26,16 @@ export default async function CookPage({
   if (!(recipe && canViewRecipe(recipe, viewerId))) {
     notFound();
   }
+  const state = viewerId
+    ? await getViewerRecipeState(viewerId, recipe.id)
+    : null;
   const requested = Number.parseInt(
     typeof servings === "string" ? servings : "",
     10
   );
   return (
     <CookMode
+      note={state?.note || null}
       recipe={{
         id: recipe.id,
         ingredients: recipe.ingredients,
@@ -40,6 +45,7 @@ export default async function CookPage({
         title: recipe.title,
       }}
       servings={requested > 0 && requested <= 100 ? requested : recipe.servings}
+      signedIn={Boolean(viewerId)}
     />
   );
 }
