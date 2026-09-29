@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft, for review. Not an ADR: once accepted, the decisions in "Data model" and "Architecture" should be recorded as ADRs under `docs/adr/` and `CONTEXT.md` should replace its template "Product" section.
+Accepted; the MVP phase is implemented. Decisions are recorded in [ADR 0002](../adr/0002-recipe-data-model-and-search.md) (data model and search), [ADR 0003](../adr/0003-url-import-security.md) (import security) and [ADR 0004](../adr/0004-auth-onboarding-and-sharing.md) (auth, onboarding, sharing, and the open questions resolved for the MVP). The v1 and later phases remain proposals.
 
 ## Summary
 
