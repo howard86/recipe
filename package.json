@@ -23,8 +23,8 @@
     "*.{js,jsx,ts,tsx,json,jsonc,css,md,yml,yaml}": "ultracite fix"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "7.10.0",
-    "@prisma/client": "7.10.0"
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
