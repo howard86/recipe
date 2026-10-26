@@ -27,14 +27,14 @@
     "@prisma/client": "7.10.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
-    "@commitlint/cli": "^21.2.3",
-    "@commitlint/config-conventional": "^21.2.3",
+    "@biomejs/biome": "2.6.2",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "prisma": "7.10.0",
+    "prisma": "7.10.1",
     "tsx": "4.23.15",
-    "turbo": "^2.11.5",
+    "turbo": "^2.11.10",
     "ultracite": "7.12.2"
   },
   "packageManager": "bun@1.4.2"
